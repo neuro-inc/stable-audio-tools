@@ -1,0 +1,69 @@
+kind: live
+title: stable_audio_tools
+
+defaults:
+  life_span: 5d
+
+images:
+  stable_audio_tools:
+    # Builds the image from the Dockerfile located in your stable-audio-tools directory
+    ref: image:$[[ project.id ]]:v1
+    dockerfile: $[[ flow.workspace ]]/Dockerfile
+    context: $[[ flow.workspace ]]
+
+volumes:
+  data:
+    remote: storage:$[[ flow.project_id ]]/data
+    mount: /app/data
+    local: data
+  checkpoints:
+    remote: storage:$[[ flow.project_id ]]/checkpoints
+    mount: /app/checkpoints
+    local: checkpoints
+
+jobs:
+  # This job will run the inference UI (Gradio) for the trained stable-audio-tools model
+  # accessible via a shareable link. The assumption is that model_config.json and an unwrapped
+  # model checkpoint are already stored in /app/checkpoints or mounted via volumes.
+  stable_audio_tools_inference:
+    image: ${{ images.stable_audio_tools.ref }}
+    # Adjust this preset according to your needs. For inference, a single GPU might suffice
+    preset: gpu-small
+    http_port: "7860"
+    detach: true
+    browse: true
+    volumes:
+      - ${{ upload(volumes.data).ref_rw }}
+      - ${{ upload(volumes.checkpoints).ref_rw }}
+    env:
+      # Add environment variables if needed, for example:
+      # HF_TOKEN: secret:HF_TOKEN
+      WANDB_API_KEY: secret:WANDB_API_KEY
+      # Or any other env variables needed for inference
+    cmd: >
+      python run_gradio.py
+      --model-config /app/model_config.json
+      --ckpt-path /app/checkpoints/unwrapped_model.ckpt
+      --share
+
+  stable_audio_tools_training:
+    image: ${{ images.stable_audio_tools.ref }}
+    preset: gpu-medium
+    detach: true
+    volumes:
+      - ${{ upload(volumes.data).ref_rw }}
+      - ${{ upload(volumes.checkpoints).ref_rw }}
+    env:
+      # Add environment variables if needed, for example:
+      # HF_TOKEN: secret:HF_TOKEN
+      WANDB_API_KEY: secret:WANDB_API_KEY
+      # Or any other env variables needed for inference
+    cmd: >
+      python train.py
+      --model-config /app/model_config.json
+      --dataset-config /app/data/training-dataset.json
+      --save-dir /app/checkpoints
+      --name my_experiment
+      --batch-size 8
+      --max_epochs 10
+

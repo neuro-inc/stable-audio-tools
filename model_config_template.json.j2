@@ -1,0 +1,126 @@
+{
+    "model_type": "{{ model_type }}",
+    "sample_size": {{ sample_size }},
+    "sample_rate": {{ sample_rate }},
+    "audio_channels": {{ audio_channels }},
+    "model": {
+      "pretransform": {
+        "type": "autoencoder",
+        "iterate_batch": true,
+        "config": {
+          "encoder": {
+            "type": "oobleck",
+            "requires_grad": {{ encoder_requires_grad|tojson }},
+            "config": {
+              "in_channels": {{ encoder_in_channels }},
+              "channels": {{ encoder_channels }},
+              "c_mults": {{ encoder_c_mults|tojson }},
+              "strides": {{ encoder_strides|tojson }},
+              "latent_dim": {{ encoder_latent_dim }},
+              "use_snake": {{ encoder_use_snake|tojson }}
+            }
+          },
+          "decoder": {
+            "type": "oobleck",
+            "config": {
+              "out_channels": {{ decoder_out_channels }},
+              "channels": {{ decoder_channels }},
+              "c_mults": {{ decoder_c_mults|tojson }},
+              "strides": {{ decoder_strides|tojson }},
+              "latent_dim": {{ decoder_latent_dim }},
+              "use_snake": {{ decoder_use_snake|tojson }},
+              "final_tanh": {{ decoder_final_tanh|tojson }}
+            }
+          },
+          "bottleneck": {
+            "type": "vae"
+          },
+          "latent_dim": {{ pre_latent_dim }},
+          "downsampling_ratio": {{ pre_downsampling_ratio }},
+          "io_channels": {{ pre_io_channels }}
+        }
+      },
+      "conditioning": {
+        "configs": [
+          {
+            "id": "prompt",
+            "type": "t5",
+            "config": {
+              "t5_model_name": "{{ t5_model_name }}",
+              "max_length": {{ t5_max_length }}
+            }
+          },
+          {
+            "id": "seconds_start",
+            "type": "number",
+            "config": {
+              "min_val": {{ seconds_start_min_val }},
+              "max_val": {{ seconds_start_max_val }}
+            }
+          },
+          {
+            "id": "seconds_total",
+            "type": "number",
+            "config": {
+              "min_val": {{ seconds_total_min_val }},
+              "max_val": {{ seconds_total_max_val }}
+            }
+          }
+        ],
+        "cond_dim": {{ cond_dim }}
+      },
+      "diffusion": {
+        "cross_attention_cond_ids": ["prompt", "seconds_start", "seconds_total"],
+        "global_cond_ids": ["seconds_start", "seconds_total"],
+        "type": "{{ diffusion_type }}",
+        "config": {
+          "io_channels": {{ diffusion_io_channels }},
+          "embed_dim": {{ diffusion_embed_dim }},
+          "depth": {{ diffusion_depth }},
+          "num_heads": {{ diffusion_num_heads }},
+          "cond_token_dim": {{ diffusion_cond_token_dim }},
+          "global_cond_dim": {{ diffusion_global_cond_dim }},
+          "project_cond_tokens": {{ diffusion_project_cond_tokens|tojson }},
+          "transformer_type": "{{ diffusion_transformer_type }}"
+        }
+      },
+      "io_channels": 64
+    },
+    "training": {
+      "use_ema": {{ use_ema|tojson }},
+      "log_loss_info": {{ log_loss_info|tojson }},
+      "optimizer_configs": {
+        "diffusion": {
+          "optimizer": {
+            "type": "{{ optimizer_type }}",
+            "config": {
+              "lr": {{ optimizer_lr }},
+              "betas": {{ optimizer_betas|tojson }},
+              "weight_decay": {{ optimizer_weight_decay }}
+            }
+          },
+          "scheduler": {
+            "type": "InverseLR",
+            "config": {
+              "inv_gamma": 1000000,
+              "power": 0.5,
+              "warmup": 0.99
+            }
+          }
+        }
+      },
+      "demo": {
+        "demo_every": {{ demo_every }},
+        "demo_steps": {{ demo_steps }},
+        "num_demos": {{ num_demos }},
+        "demo_cond": [
+          {"prompt": "Drums[121] Ballroom", "seconds_start": 0, "seconds_total": 8},
+          {"prompt": "Darbuka[110] House", "seconds_start": 0, "seconds_total": 8},
+          {"prompt": "Perc[120] Orion", "seconds_start": 0, "seconds_total": 8},
+          {"prompt": "Rim[117] Calm", "seconds_start": 0, "seconds_total": 8},
+          {"prompt": "Synth[90] G Basco", "seconds_start": 0, "seconds_total": 8}
+        ],
+        "demo_cfg_scales": {{ demo_cfg_scales|tojson }}
+      }
+    }
+}

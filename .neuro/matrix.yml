@@ -1,0 +1,49 @@
+kind: batch
+defaults:
+  image: stable-audio-tools
+  preset: gpu-small
+  volumes:
+    - ./dataset:/app/data:ro
+    - ./checkpoints:/app/checkpoints
+  workdir: /app
+params:
+  experiment_name:
+    default: "grid_search_experiment"
+    descr: "Name of the experiment for Weights & Biases"
+
+tasks:
+  - strategy:
+      matrix:
+        learning_rate: [1e-4, 5e-5, 1e-5]  
+        batch_size: [4, 8, 16]
+        optimizer_weight_decay: [0.001, 0.0005]
+        encoder_latent_dim: [64, 128] 
+        diffusion_depth: [12, 24]
+    id: training_lr_${{ matrix.learning_rate }}_bs_${{ matrix.batch_size }}_wd_${{ matrix.optimizer_weight_decay }}_eld_${{ matrix.encoder_latent_dim }}_dd_${{ matrix.diffusion_depth }}
+    title: Training run with lr=${{ matrix.learning_rate }}, bs=${{ matrix.batch_size }}, wd=${{ matrix.optimizer_weight_decay }}, eld=${{ matrix.encoder_latent_dim }}, dd=${{ matrix.diffusion_depth }}
+    env:
+      WANDB_API_KEY: secret:WANDB_API_KEY 
+      LEARNING_RATE: ${{ matrix.learning_rate }}
+      BATCH_SIZE: ${{ matrix.batch_size }}
+      WEIGHT_DECAY: ${{ matrix.optimizer_weight_decay }}
+      ENCODER_LATENT_DIM: ${{ matrix.encoder_latent_dim }}
+      DIFFUSION_DEPTH: ${{ matrix.diffusion_depth }}
+
+    python: |
+      # Generate a fresh config for this run based on the matrix parameters.
+      python generate_config.py \
+        --optimizer_lr ${LEARNING_RATE} \
+        --batch_size ${BATCH_SIZE} \
+        --optimizer_weight_decay ${WEIGHT_DECAY} \
+        --encoder_latent_dim ${ENCODER_LATENT_DIM} \
+        --diffusion_depth ${DIFFUSION_DEPTH} \
+        --demo_cfg_scales "[6]" \
+        # Add more overrides if necessary
+
+      # Use the generated config to train
+      python train.py \
+        --model-config model_config.json \
+        --dataset-config /app/configs/your_dataset_config.json \
+        --save-dir /app/checkpoints \
+        --name ${{ params.experiment_name }} \
+        --batch-size ${BATCH_SIZE}
