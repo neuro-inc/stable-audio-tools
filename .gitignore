@@ -163,3 +163,4 @@ cython_debug/
 *.wav
 wandb/*
 dataset/*
+checkpoints/*
