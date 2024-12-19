@@ -34,4 +34,4 @@ RUN pip install jinja2 pyyaml
 RUN mkdir /app/checkpoints
 
 # Define default command (you'll likely override this when running the container)
-CMD ["python", "train.py", "--model-config", "/app/model_config.json", "--dataset-config", "/app/dataset_config.json", "--save-dir", "/app/checkpoints"]
+CMD ["python", "train.py", "--model-config", "/app/model_config.json", "--dataset-config", "/app/dataset_config.json", "--name", "my_model_name", "--save-dir", "/app/checkpoints", "--checkpoint-every", "100", "--batch-size", "32", "--num-gpus", "1", "--precision", "16-mixed", "--seed", "42", "--pretrained-ckpt-path", "./checkpoints/model-001.ckpt"]
