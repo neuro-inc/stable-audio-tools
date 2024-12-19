@@ -24,6 +24,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Install project
 RUN pip install --no-cache-dir .
 
+RUN pip install jinja2 pyyaml
+
 # (Optional) Download a pretrained model and its config if you plan to use one for fine-tuning or inference
 # ARG PRETRAINED_MODEL_NAME="stabilityai/stable-audio-open-1.0"
 # RUN python -c "from huggingface_hub import hf_hub_download; hf_hub_download('$PRETRAINED_MODEL_NAME', filename='model_config.json', repo_type='model'); hf_hub_download('$PRETRAINED_MODEL_NAME', filename='model.safetensors', repo_type='model')"
