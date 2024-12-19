@@ -61,7 +61,7 @@ jobs:
     cmd: >
       python train.py
       --model-config /app/model_config.json
-      --dataset-config /app/data/training-dataset.json
+      --dataset-config /app/training-dataset.json
       --save-dir /app/checkpoints
       --name my_experiment
       --batch-size 8
