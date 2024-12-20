@@ -2,7 +2,7 @@ kind: batch
 title: "stable_audio_tools matrix batch"
 
 defaults:
-  preset: H100X1
+  preset: a100x1
   max_parallel: 2
   workdir: /app
   volumes:

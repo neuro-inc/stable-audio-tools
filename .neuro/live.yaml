@@ -28,7 +28,7 @@ jobs:
   stable_audio_tools_inference:
     image: ${{ images.stable_audio_tools.ref }}
     # Adjust this preset according to your needs. For inference, a single GPU might suffice
-    preset: H100X1
+    preset: a100x1
     http_port: "7860"
     detach: true
     http_auth: false
@@ -51,7 +51,7 @@ jobs:
 
   stable_audio_tools_unwrap:
     image: ${{ images.stable_audio_tools.ref }}
-    preset: H100X1
+    preset: a100x1
     detach: true
     volumes:
       - ${{ upload(volumes.checkpoints).ref_rw }}
@@ -65,7 +65,7 @@ jobs:
 
   stable_audio_tools_training:
     image: ${{ images.stable_audio_tools.ref }}
-    preset: H100X1
+    preset: a100x1
     detach: true
     volumes:
       - ${{ upload(volumes.dataset).ref_rw }}
