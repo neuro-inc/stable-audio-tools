@@ -79,7 +79,7 @@ jobs:
       --save-dir /app/checkpoints
       --name my_experiment
       --batch-size 8
-      --checkpoint-every 1
+      --checkpoint-every 10
       --max-epochs 10
       --num-gpus 1
 
