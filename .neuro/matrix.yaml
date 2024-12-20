@@ -29,14 +29,14 @@ images:
 tasks:
   - strategy:
       matrix:
-        learning_rate: ["0.0001", "0.00005", "0.00001"]
+        learning_rate: [0.0001, 0.00005, 0.00001]
         batch_size: [4, 8, 16, 32]
-        optimizer_weight_decay: ["0.001", "0.0005"]
+        optimizer_weight_decay: [0.001, 0.0005]
         encoder_latent_dim: [64, 128]
         diffusion_depth: [12, 24]
         seed: [42]
         max_epochs: [10]
-    id: stable_audio_tools_experiment
+    id: stable_audio_tools_experiment_training_lr_${{ replace(replace(str(matrix.learning_rate), '.', '_'), '-', '_') }}_bs_${{ matrix.batch_size }}_wd_${{ replace(replace(str(matrix.optimizer_weight_decay), '.', '_'), '-', '_') }}_eld_${{ matrix.encoder_latent_dim }}_dd_${{ matrix.diffusion_depth }}_seed_${{ matrix.seed }}_max_epochs_${{ matrix.max_epochs }}
     title: Training run with lr=${{ matrix.learning_rate }}, bs=${{ matrix.batch_size }}, wd=${{ matrix.optimizer_weight_decay }}, eld=${{ matrix.encoder_latent_dim }}, dd=${{ matrix.diffusion_depth }}, seed=${{ matrix.seed }}
 
     image: ${{ images.stable_audio_tools.ref }}
@@ -49,7 +49,7 @@ tasks:
       ENCODER_LATENT_DIM: ${{ matrix.encoder_latent_dim }}
       DIFFUSION_DEPTH: ${{ matrix.diffusion_depth }}
       MAX_EPOCHS: ${{ matrix.max_epochs }}
-      
+
     bash: |
       python generate_config.py \
         --optimizer_lr ${LEARNING_RATE} \
@@ -61,7 +61,7 @@ tasks:
         --model-config /app/model_config.json \
         --dataset-config /app/training-dataset.json \
         --save-dir /app/checkpoints \
-        --name ${{ params.experiment_name }}_training_lr_${{ matrix.learning_rate }}_bs_${{ matrix.batch_size }}_wd_${{ matrix.optimizer_weight_decay }}_eld_${{ matrix.encoder_latent_dim }}_dd_${{ matrix.diffusion_depth }}_seed_${{ matrix.seed }}_precision_16-mixed \
+        --name ${{ params.experiment_name }} \
         --num-gpus 1 \
         --seed ${{ matrix.seed }} \
         --precision "16-mixed" \
