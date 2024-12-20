@@ -60,7 +60,7 @@ jobs:
     cmd: >
       python unwrap_model.py
       --model-config /app/model_config.json
-      --ckpt-path /app/checkpoints/my_experiment/<run_id>/checkpoints/epoch=999999.ckpt
+      --ckpt-path /app/checkpoints/my_experiment/621xkgv9/checkpoints/epoch=6-step=250.ckpt
       --name unwrapped_model
 
   stable_audio_tools_training:
