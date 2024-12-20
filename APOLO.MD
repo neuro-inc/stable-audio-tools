@@ -70,7 +70,7 @@ Running the Training Job (Live Workflow)
 The live workflow is defined in `.neuro/live.yaml`. After building the image, you can run the training job defined there:
 
 ```
-apolo-flow run stable_audio_tools_training
+apolo-flow run training
 ```
 
 **What it Does:**
@@ -88,7 +88,7 @@ Running the Inference Job (Live Workflow)
 After you have a trained or unwrapped model checkpoint, you can run the inference Gradio UI job:
 
 ```
-apolo-flow run stable_audio_tools_inference
+apolo-flow run inference
 ```
 
 **What it Does:**
@@ -97,7 +97,7 @@ apolo-flow run stable_audio_tools_inference
 *   Serves on an HTTP endpoint protected by Apolo.
 *   Allows you to test the model's generation capabilities.
 
-You can see the URL for the Gradio interface by checking `apolo-flow status stable_audio_tools_inference`.
+You can see the URL for the Gradio interface by checking `apolo-flow status inference`.
 
 Unwrapping the Model (Live Workflow)
 ------------------------------------
@@ -109,7 +109,7 @@ Once training is complete, you often need to unwrap the model checkpoint for inf
     
     
     ```
-    apolo-flow run stable_audio_tools_unwrap
+    apolo-flow run unwrap
     ```
     
 
@@ -152,9 +152,9 @@ Summary
 *   **Set W&B Secret**: `apolo secret add WANDB_API_KEY <YOUR_KEY>`
 *   **Build Image**: `apolo-flow build stable_audio_tools`
 *   **Upload Local Data/Checkpoints**: `apolo-flow upload dataset` and `apolo-flow upload checkpoints`
-*   **Run Training**: `apolo-flow run stable_audio_tools_training`
-*   **Run Inference UI**: `apolo-flow run stable_audio_tools_inference`
-*   **Unwrap Model**: `apolo-flow run stable_audio_tools_unwrap`
+*   **Run Training**: `apolo-flow run training`
+*   **Run Inference UI**: `apolo-flow run inference`
+*   **Unwrap Model**: `apolo-flow run unwrap`
 *   **Run Grid Search**: `apolo-flow bake matrix`
 
 These steps let you manage the full lifecycle of training, testing, and optimizing your stable-audio-tools model on Apolo. You can interact with storage as you see fit—either pre-uploading via `apolo-flow upload` or directly referencing remote storage paths.

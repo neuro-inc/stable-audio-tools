@@ -25,7 +25,7 @@ jobs:
   # This job will run the inference UI (Gradio) for the trained stable-audio-tools model
   # accessible via a shareable link. The assumption is that model_config.json and an unwrapped
   # model checkpoint are already stored in /app/checkpoints or mounted via volumes.
-  stable_audio_tools_inference:
+  inference:
     image: ${{ images.stable_audio_tools.ref }}
     # Adjust this preset according to your needs. For inference, a single GPU might suffice
     preset: a100x1
@@ -49,7 +49,7 @@ jobs:
       --password password
       --share
 
-  stable_audio_tools_unwrap:
+  unwrap:
     image: ${{ images.stable_audio_tools.ref }}
     preset: a100x1
     detach: true
@@ -60,10 +60,10 @@ jobs:
     cmd: >
       python unwrap_model.py
       --model-config /app/model_config.json
-      --ckpt-path /app/checkpoints/my_experiment/621xkgv9/checkpoints/epoch=6-step=250.ckpt
+      --ckpt-path /app/checkpoints/my_experiment/cgv36tep/checkpoints/epoch=0-step=20.ckpt
       --name unwrapped_model
 
-  stable_audio_tools_training:
+  training:
     image: ${{ images.stable_audio_tools.ref }}
     preset: a100x1
     detach: true
