@@ -28,12 +28,12 @@ jobs:
   stable_audio_tools_inference:
     image: ${{ images.stable_audio_tools.ref }}
     # Adjust this preset according to your needs. For inference, a single GPU might suffice
-    preset: gpu-small
+    preset: H100X1
     http_port: "7860"
     detach: true
     browse: true
     volumes:
-      - ${{ upload(volumes.data).ref_rw }}
+      - ${{ upload(volumes.dataset).ref_rw }}
       - ${{ upload(volumes.checkpoints).ref_rw }}
     env:
       # Add environment variables if needed, for example:
@@ -43,12 +43,26 @@ jobs:
     cmd: >
       python run_gradio.py
       --model-config /app/model_config.json
-      --ckpt-path /app/checkpoints/unwrapped_model.ckpt
+      --ckpt-path /app/checkpoints/model-001.ckpt
       --share
+
+  stable_audio_tools_unwrap:
+    image: ${{ images.stable_audio_tools.ref }}
+    preset: H100X1
+    detach: true
+    volumes:
+      - ${{ upload(volumes.checkpoints).ref_rw }}
+    env:
+      WANDB_API_KEY: secret:WANDB_API_KEY
+    cmd: >
+      python unwrap_model.py
+      --model-config /app/model_config.json
+      --ckpt-path /app/checkpoints/my_experiment/<run_id>/checkpoints/epoch=999999.ckpt
+      --name unwrapped_model
 
   stable_audio_tools_training:
     image: ${{ images.stable_audio_tools.ref }}
-    preset: gpu-medium
+    preset: H100X1
     detach: true
     volumes:
       - ${{ upload(volumes.dataset).ref_rw }}
@@ -65,5 +79,7 @@ jobs:
       --save-dir /app/checkpoints
       --name my_experiment
       --batch-size 8
-      --max_epochs 10
+      --checkpoint-every 1
+      --max-epochs 10
+      --num-gpus 1
 

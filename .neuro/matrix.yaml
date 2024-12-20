@@ -1,11 +1,19 @@
 kind: batch
 defaults:
   image: stable-audio-tools
-  preset: gpu-small
+  preset: H100X1
+  # max number of tasks to run in parallel
+  max_parallel: 2
   volumes:
-    - ./dataset:/app/dataset:ro
-    - ./checkpoints:/app/checkpoints
-  workdir: /app
+    # For batch workflow volumes, only remote and mount are supported.
+    dataset:
+      remote: storage:${{ flow.project_id }}/dataset
+      mount: /app/dataset
+    checkpoints:
+      remote: storage:${{ flow.project_id }}/checkpoints
+      mount: /app/checkpoints
+
+workdir: /app
 params:
   experiment_name:
     default: "grid_search_experiment"
@@ -31,6 +39,10 @@ tasks:
       ENCODER_LATENT_DIM: ${{ matrix.encoder_latent_dim }}
       DIFFUSION_DEPTH: ${{ matrix.diffusion_depth }}
 
+    # Mount volumes defined above
+    volumes:
+      - ${{ volumes.dataset.ref_ro }}
+      - ${{ volumes.checkpoints.ref_rw }}
 
     python: |
       # Generate a fresh config for this run based on the matrix parameters.
@@ -46,7 +58,7 @@ tasks:
       # Use the generated config to train
       python train.py \
         --model-config /app/model_config.json \
-        --dataset-config /app/train_dataset.json \
+        --dataset-config /app/training-dataset.json \
         --save-dir /app/checkpoints \
         --name ${{ params.experiment_name }}_training_lr_${{ matrix.learning_rate }}_bs_${{ matrix.batch_size }}_wd_${{ matrix.optimizer_weight_decay }}_eld_${{ matrix.encoder_latent_dim }}_dd_${{ matrix.diffusion_depth }}_seed_${{ matrix.seed }}_precision_${{ matrix.precision }} \
         --num-gpus 1 \
