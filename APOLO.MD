@@ -7,7 +7,7 @@ This guide describes how to set up and run various jobs (training, inference, mo
 1. **Clone the Repository**  
    Ensure you are on the `MLO-71` branch:
    ```bash
-   git clone https://github.com/your-username/stable-audio-tools.git
+   git clone https://github.com/neuro-inc/stable-audio-tools.git
    cd stable-audio-tools
    git checkout MLO-71
    ```
