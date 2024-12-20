@@ -12,10 +12,10 @@ images:
     context: $[[ flow.workspace ]]
 
 volumes:
-  data:
-    remote: storage:$[[ flow.project_id ]]/data
-    mount: /app/data
-    local: data
+  dataset:
+    remote: storage:$[[ flow.project_id ]]/dataset
+    mount: /app/dataset
+    local: dataset
   checkpoints:
     remote: storage:$[[ flow.project_id ]]/checkpoints
     mount: /app/checkpoints
@@ -51,7 +51,7 @@ jobs:
     preset: gpu-medium
     detach: true
     volumes:
-      - ${{ upload(volumes.data).ref_rw }}
+      - ${{ upload(volumes.dataset).ref_rw }}
       - ${{ upload(volumes.checkpoints).ref_rw }}
     env:
       # Add environment variables if needed, for example:

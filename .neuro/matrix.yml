@@ -3,7 +3,7 @@ defaults:
   image: stable-audio-tools
   preset: gpu-small
   volumes:
-    - ./dataset:/app/data:ro
+    - ./dataset:/app/dataset:ro
     - ./checkpoints:/app/checkpoints
   workdir: /app
 params:
