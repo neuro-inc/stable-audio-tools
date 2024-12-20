@@ -32,8 +32,8 @@ tasks:
         learning_rate: [0.0001, 0.00005, 0.00001]
         batch_size: [4, 8, 16, 32]
         optimizer_weight_decay: [0.001, 0.0005]
-        encoder_latent_dim: [64, 128]
-        diffusion_depth: [12, 24]
+        encoder_latent_dim: [128]
+        diffusion_depth: [24]
         seed: [42]
         max_epochs: [10]
     id: stable_audio_tools_experiment_training_lr_${{ replace(replace(str(matrix.learning_rate), '.', '_'), '-', '_') }}_bs_${{ matrix.batch_size }}_wd_${{ replace(replace(str(matrix.optimizer_weight_decay), '.', '_'), '-', '_') }}_eld_${{ matrix.encoder_latent_dim }}_dd_${{ matrix.diffusion_depth }}_seed_${{ matrix.seed }}_max_epochs_${{ matrix.max_epochs }}
