@@ -31,6 +31,7 @@ jobs:
     preset: H100X1
     http_port: "7860"
     detach: true
+    http_auth: false
     browse: true
     volumes:
       - ${{ upload(volumes.dataset).ref_rw }}
@@ -44,6 +45,8 @@ jobs:
       python run_gradio.py
       --model-config /app/model_config.json
       --ckpt-path /app/checkpoints/model-001.ckpt
+      --username test
+      --password password
       --share
 
   stable_audio_tools_unwrap:

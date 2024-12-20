@@ -1,68 +1,70 @@
 kind: batch
-defaults:
-  image: stable-audio-tools
-  preset: H100X1
-  # max number of tasks to run in parallel
-  max_parallel: 2
-  volumes:
-    # For batch workflow volumes, only remote and mount are supported.
-    dataset:
-      remote: storage:${{ flow.project_id }}/dataset
-      mount: /app/dataset
-    checkpoints:
-      remote: storage:${{ flow.project_id }}/checkpoints
-      mount: /app/checkpoints
+title: "stable_audio_tools matrix batch"
 
-workdir: /app
+defaults:
+  preset: H100X1
+  max_parallel: 2
+  workdir: /app
+  volumes:
+    - storage:${{ flow.project_id }}/dataset:/app/dataset
+    - storage:${{ flow.project_id }}/checkpoints:/app/checkpoints
+
 params:
   experiment_name:
     default: "grid_search_experiment"
     descr: "Name of the experiment for Weights & Biases"
 
+volumes:
+  dataset:
+    remote: storage:${{ flow.project_id }}/dataset
+    mount: /app/dataset
+  checkpoints:
+    remote: storage:${{ flow.project_id }}/checkpoints
+    mount: /app/checkpoints
+
+images:
+  stable_audio_tools:
+    ref: image:${{ flow.project_id }}:v1
+
 tasks:
   - strategy:
       matrix:
-        learning_rate: [1e-4, 5e-5, 1e-5]  
+        learning_rate: ["0.0001", "0.00005", "0.00001"]
         batch_size: [4, 8, 16, 32]
-        optimizer_weight_decay: [0.001, 0.0005]
-        encoder_latent_dim: [64, 128] 
+        optimizer_weight_decay: ["0.001", "0.0005"]
+        encoder_latent_dim: [64, 128]
         diffusion_depth: [12, 24]
         seed: [42]
-        precision: ["16-mixed"]
-    id: training_lr_${{ matrix.learning_rate }}_bs_${{ matrix.batch_size }}_wd_${{ matrix.optimizer_weight_decay }}_eld_${{ matrix.encoder_latent_dim }}_dd_${{ matrix.diffusion_depth }}_seed_${{ matrix.seed }}_precision_${{ matrix.precision }}
-    title: Training run with lr=${{ matrix.learning_rate }}, bs=${{ matrix.batch_size }}, wd=${{ matrix.optimizer_weight_decay }}, eld=${{ matrix.encoder_latent_dim }}, dd=${{ matrix.diffusion_depth }}, seed=${{ matrix.seed }}, precision=${{ matrix.precision }}
+        max_epochs: [10]
+    id: stable_audio_tools_experiment
+    title: Training run with lr=${{ matrix.learning_rate }}, bs=${{ matrix.batch_size }}, wd=${{ matrix.optimizer_weight_decay }}, eld=${{ matrix.encoder_latent_dim }}, dd=${{ matrix.diffusion_depth }}, seed=${{ matrix.seed }}
+
+    image: ${{ images.stable_audio_tools.ref }}
+
     env:
-      WANDB_API_KEY: secret:WANDB_API_KEY 
+      WANDB_API_KEY: secret:WANDB_API_KEY
       LEARNING_RATE: ${{ matrix.learning_rate }}
       BATCH_SIZE: ${{ matrix.batch_size }}
       WEIGHT_DECAY: ${{ matrix.optimizer_weight_decay }}
       ENCODER_LATENT_DIM: ${{ matrix.encoder_latent_dim }}
       DIFFUSION_DEPTH: ${{ matrix.diffusion_depth }}
-
-    # Mount volumes defined above
-    volumes:
-      - ${{ volumes.dataset.ref_ro }}
-      - ${{ volumes.checkpoints.ref_rw }}
-
-    python: |
-      # Generate a fresh config for this run based on the matrix parameters.
+      MAX_EPOCHS: ${{ matrix.max_epochs }}
+      
+    bash: |
       python generate_config.py \
         --optimizer_lr ${LEARNING_RATE} \
-        --batch_size ${BATCH_SIZE} \
-        --optimizer_weight_decay ${WEIGHT_DECAY} \
         --encoder_latent_dim ${ENCODER_LATENT_DIM} \
         --diffusion_depth ${DIFFUSION_DEPTH} \
-        --demo_cfg_scales "[6]" \
-        # Add more overrides if necessary
+        --demo_cfg_scales "[6]"
 
-      # Use the generated config to train
       python train.py \
         --model-config /app/model_config.json \
         --dataset-config /app/training-dataset.json \
         --save-dir /app/checkpoints \
-        --name ${{ params.experiment_name }}_training_lr_${{ matrix.learning_rate }}_bs_${{ matrix.batch_size }}_wd_${{ matrix.optimizer_weight_decay }}_eld_${{ matrix.encoder_latent_dim }}_dd_${{ matrix.diffusion_depth }}_seed_${{ matrix.seed }}_precision_${{ matrix.precision }} \
+        --name ${{ params.experiment_name }}_training_lr_${{ matrix.learning_rate }}_bs_${{ matrix.batch_size }}_wd_${{ matrix.optimizer_weight_decay }}_eld_${{ matrix.encoder_latent_dim }}_dd_${{ matrix.diffusion_depth }}_seed_${{ matrix.seed }}_precision_16-mixed \
         --num-gpus 1 \
         --seed ${{ matrix.seed }} \
-        --precision ${{ matrix.precision }} \
+        --precision "16-mixed" \
         --pretrained-ckpt-path /app/checkpoints/model-001.ckpt \
-        --batch-size ${BATCH_SIZE}
+        --batch-size ${BATCH_SIZE} \
+        --max-epochs ${MAX_EPOCHS}
