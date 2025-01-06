@@ -24,7 +24,7 @@ This guide describes how to set up and run various jobs (training, inference, mo
     
     ```bash
     stable-audio-tools/ 
-     ├── .neuro/ 
+     ├── .apolo/ 
      │   ├── live.yaml 
      │   ├── matrix.yaml 
      │   └── project.yaml 
@@ -67,7 +67,7 @@ This command will:
 Running the Training Job (Live Workflow)
 ----------------------------------------
 
-The live workflow is defined in `.neuro/live.yaml`. After building the image, you can run the training job defined there:
+The live workflow is defined in `.apolo/live.yaml`. After building the image, you can run the training job defined there:
 
 ```
 apolo-flow run training
@@ -123,7 +123,7 @@ After completion, you'll find `unwrapped_model.ckpt` in the `/app/checkpoints` d
 Running the Grid Search (Batch Workflow)
 ----------------------------------------
 
-The `.neuro/matrix.yaml` defines a batch workflow for a parameter grid search. This allows running multiple training configurations in parallel, exploring different hyperparameters.
+The `.apolo/matrix.yaml` defines a batch workflow for a parameter grid search. This allows running multiple training configurations in parallel, exploring different hyperparameters.
 
 Before starting the batch:
 

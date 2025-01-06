@@ -3,6 +3,7 @@ title: "stable_audio_tools matrix batch"
 
 defaults:
   preset: a100x1
+  # Number of tasks to run in parallel
   max_parallel: 2
   workdir: /app
   volumes:
