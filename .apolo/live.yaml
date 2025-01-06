@@ -57,11 +57,13 @@ jobs:
       - ${{ upload(volumes.checkpoints).ref_rw }}
     env:
       WANDB_API_KEY: secret:WANDB_API_KEY
+    # unwrap model and save it to /app/checkpoints/unwrapped_model.ckpt
     cmd: >
-      python unwrap_model.py
+      /bin/bash -c "python unwrap_model.py
       --model-config /app/model_config.json
       --ckpt-path /app/checkpoints/my_experiment/cgv36tep/checkpoints/epoch=0-step=20.ckpt
-      --name unwrapped_model
+      --name unwrapped_model &&
+      cp /app/unwrapped_model.ckpt /app/checkpoints/unwrapped_model.ckpt"
 
   training:
     image: ${{ images.stable_audio_tools.ref }}
