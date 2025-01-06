@@ -1,10 +1,8 @@
-FROM pytorch/pytorch:2.0.1-cuda11.8-cudnn8-devel
+FROM pytorch/pytorch:2.3.1-cuda11.8-cudnn8-devel
 
-# Set environment variables
 ENV DEBIAN_FRONTEND noninteractive
 ENV PYTHONUNBUFFERED 1
 
-# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     git \
@@ -12,24 +10,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libsndfile1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
 WORKDIR /app
-
-# Copy project files
 COPY . /app
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install the project
+RUN pip install --no-cache-dir -e .
 
-# Install project
-RUN pip install --no-cache-dir .
+# Use a newer version of NumPy that includes np.dtypes
+RUN pip install --no-cache-dir numpy==1.25.2
 
-# (Optional) Download a pretrained model and its config if you plan to use one for fine-tuning or inference
-# ARG PRETRAINED_MODEL_NAME="stabilityai/stable-audio-open-1.0"
-# RUN python -c "from huggingface_hub import hf_hub_download; hf_hub_download('$PRETRAINED_MODEL_NAME', filename='model_config.json', repo_type='model'); hf_hub_download('$PRETRAINED_MODEL_NAME', filename='model.safetensors', repo_type='model')"
+RUN mkdir -p /app/checkpoints
 
-# Create a directory for saving checkpoints
-RUN mkdir /app/checkpoints
-
-# Define default command (you'll likely override this when running the container)
-CMD ["python", "train.py", "--model-config", "/app/model_config.json", "--dataset-config", "/app/dataset_config.json", "--save-dir", "/app/checkpoints"]
+CMD ["python", "train.py", "--model-config", "/app/model_config.json", "--dataset-config", "/app/dataset_config.json", "--name", "my_model_name", "--save-dir", "/app/checkpoints", "--checkpoint-every", "100", "--batch-size", "32", "--num-gpus", "1", "--precision", "16-mixed", "--seed", "42", "--pretrained-ckpt-path", "./checkpoints/model-001.ckpt"]

@@ -1,0 +1,11 @@
+{
+    "dataset_type": "audio_dir",
+    "datasets": [
+        {
+            "id": "my_dataset",
+            "path": "./dataset/my_dataset",
+            "custom_metadata_module": "./custom-dataset.py"
+        }
+    ],
+    "random_crop": false
+}

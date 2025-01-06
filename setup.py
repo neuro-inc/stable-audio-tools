@@ -39,6 +39,8 @@ setup(
         'vector-quantize-pytorch==1.9.14',
         'wandb==0.15.4',
         'webdataset==0.2.48',
-        'x-transformers<1.27.0'
+        'x-transformers<1.27.0',
+        'jinja2',
+        'pyyaml'
     ],
 )

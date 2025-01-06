@@ -1,0 +1,90 @@
+kind: live
+title: stable_audio_tools
+
+defaults:
+  life_span: 5d
+
+images:
+  stable_audio_tools:
+    # Builds the image from the Dockerfile located in your stable-audio-tools directory
+    ref: image:$[[ project.id ]]:v1
+    dockerfile: $[[ flow.workspace ]]/Dockerfile
+    context: $[[ flow.workspace ]]
+
+volumes:
+  dataset:
+    remote: storage:$[[ flow.project_id ]]/dataset
+    mount: /app/dataset
+    local: dataset
+  checkpoints:
+    remote: storage:$[[ flow.project_id ]]/checkpoints
+    mount: /app/checkpoints
+    local: checkpoints
+
+jobs:
+  # This job will run the inference UI (Gradio) for the trained stable-audio-tools model
+  # accessible via a shareable link. The assumption is that model_config.json and an unwrapped
+  # model checkpoint are already stored in /app/checkpoints or mounted via volumes.
+  inference:
+    image: ${{ images.stable_audio_tools.ref }}
+    # Adjust this preset according to your needs. For inference, a single GPU might suffice
+    preset: a100x1
+    http_port: "7860"
+    detach: true
+    http_auth: false
+    browse: true
+    volumes:
+      - ${{ upload(volumes.dataset).ref_rw }}
+      - ${{ upload(volumes.checkpoints).ref_rw }}
+    env:
+      # Add environment variables if needed, for example:
+      # HF_TOKEN: secret:HF_TOKEN
+      WANDB_API_KEY: secret:WANDB_API_KEY
+      # Or any other env variables needed for inference
+    cmd: >
+      python run_gradio.py
+      --model-config /app/model_config.json
+      --ckpt-path /app/checkpoints/model-001.ckpt
+      --username test
+      --password password
+      --share
+
+  unwrap:
+    image: ${{ images.stable_audio_tools.ref }}
+    preset: a100x1
+    detach: true
+    volumes:
+      - ${{ upload(volumes.checkpoints).ref_rw }}
+    env:
+      WANDB_API_KEY: secret:WANDB_API_KEY
+    # unwrap model and save it to /app/checkpoints/unwrapped_model.ckpt
+    cmd: >
+      /bin/bash -c "python unwrap_model.py
+      --model-config /app/model_config.json
+      --ckpt-path /app/checkpoints/my_experiment/cgv36tep/checkpoints/epoch=0-step=20.ckpt
+      --name unwrapped_model &&
+      cp /app/unwrapped_model.ckpt /app/checkpoints/unwrapped_model.ckpt"
+
+  training:
+    image: ${{ images.stable_audio_tools.ref }}
+    preset: a100x1
+    detach: true
+    volumes:
+      - ${{ upload(volumes.dataset).ref_rw }}
+      - ${{ upload(volumes.checkpoints).ref_rw }}
+    env:
+      # Add environment variables if needed, for example:
+      # HF_TOKEN: secret:HF_TOKEN
+      WANDB_API_KEY: secret:WANDB_API_KEY
+      # Or any other env variables needed for inference
+    cmd: >
+      python train.py
+      --model-config /app/model_config.json
+      --dataset-config /app/training-dataset.json
+      --save-dir /app/checkpoints
+      --name my_experiment
+      --batch-size 8
+      --checkpoint-every 10
+      --max-epochs 10
+      --num-gpus 1
+
