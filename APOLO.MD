@@ -5,11 +5,11 @@ This guide describes how to set up and run various jobs (training, inference, mo
 ## Prerequisites
 
 1. **Clone the Repository**  
-   Ensure you are on the `MLO-71` branch:
+   Ensure you are on the `apolo` branch:
    ```bash
    git clone https://github.com/neuro-inc/stable-audio-tools.git
    cd stable-audio-tools
-   git checkout MLO-71
+   git checkout apolo
    ```
 2.  **Set Up Weights & Biases API Key**  
     Before running any training or job that logs metrics, you'll need to set a secret for W&B.  
