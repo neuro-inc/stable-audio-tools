@@ -15,7 +15,7 @@ def main(args):
         model_half=args.model_half
     )
     interface.queue()
-    interface.launch(share=args.share, auth=(args.username, args.password) if args.username is not None else None)
+    interface.launch(server_name="0.0.0.0", server_port=7860, share=args.share, auth=(args.username, args.password) if args.username is not None else None)
 
 if __name__ == "__main__":
     import argparse
